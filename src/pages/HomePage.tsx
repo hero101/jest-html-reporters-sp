@@ -101,7 +101,7 @@ export const HomePage = ({ data }: { data: IReportData }) => {
             onChange={(checked) => setGlobalExpandState(checked)}
             checked={globalExpandState}
           />
-          <span className='text'>Show only failed</span>
+          <span className='text'>Show Only Failed</span>
           <Switch
             onChange={(checked) => setShowOnlyFailed(checked)}
             checked={showOnlyFailed}
