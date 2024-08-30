@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Layout, FloatButton, Row, Col, Switch, Typography, theme } from 'antd';
 
 import {
@@ -21,6 +21,7 @@ export const HomePage = ({ data }: { data: IReportData }) => {
     data._reporterOptions.expand || false
   );
   const [usingExecutionTime, setUsingExecutionTime] = useState(false);
+  const [showOnlyFailed, setShowOnlyFailed] = useState(true);
   const { config } = data;
   const {
     token,
@@ -30,11 +31,31 @@ export const HomePage = ({ data }: { data: IReportData }) => {
     addThemeClass(token, id);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  const filteredData = useMemo(() => {
+    if (!showOnlyFailed) {
+      return data;
+    }
+
+    const filteredResults = data.testResults
+        .filter(test => test.failureMessage)
+        .map((test) => ({
+          ...test,
+          testResults: test.testResults.filter(result => result.status === 'failed'),
+        })
+      );
+
+    return {
+      ...data,
+      testResults: filteredResults,
+    };
+  }, [showOnlyFailed, data])
+
   const comProps = {
-    ...data,
+    ...filteredData,
     testResults: usingExecutionTime
-      ? getExecutionResult(data.testResults)
-      : data.testResults,
+      ? getExecutionResult(filteredData.testResults)
+      : filteredData.testResults,
     globalExpandState,
   };
 
@@ -79,6 +100,11 @@ export const HomePage = ({ data }: { data: IReportData }) => {
           <Switch
             onChange={(checked) => setGlobalExpandState(checked)}
             checked={globalExpandState}
+          />
+          <span className='text'>Show only failed</span>
+          <Switch
+            onChange={(checked) => setShowOnlyFailed(checked)}
+            checked={showOnlyFailed}
           />
         </span>
       </Title>
